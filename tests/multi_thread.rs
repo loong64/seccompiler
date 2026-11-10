@@ -14,6 +14,8 @@ use seccompiler::{
 use std::env::consts::ARCH;
 
 fn check_getpid_fails() {
+    // getpid does not clear errno on success (or on its raw syscall path).
+    unsafe { *libc::__errno_location() = 0 };
     let pid = unsafe { libc::getpid() };
     let errno = std::io::Error::last_os_error().raw_os_error().unwrap();
 
@@ -30,6 +32,8 @@ fn test_tsync() {
     let (finish_tx, finish_rx) = sync_channel::<()>(0);
 
     // first check getpid is working
+    // getpid does not clear errno on success (or on its raw syscall path).
+    unsafe { *libc::__errno_location() = 0 };
     let pid = unsafe { libc::getpid() };
     let errno = std::io::Error::last_os_error().raw_os_error().unwrap();
 
